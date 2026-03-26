@@ -4,12 +4,13 @@ let TableMusic = document.getElementById("songTable");
 let searchMusic = document.getElementById("search");
 let submitBtn = document.getElementById("submitBtn");
 let formTitle = document.getElementById("formTitle");
+let formElm = document.getElementById("frome")
 
 let MyPlaylist = JSON.parse(localStorage.getItem("music_data")) || 
 [
-    { id: 1, name: "Shape of you", author: "Ed Sheeran" },
-    { id: 2, name: "Stay With Me", author: "Miki Matsubara" },
-    { id: 3, name: "Renai Circulation", author: "IDK" }
+    // { id: 1, name: "Shape of you", author: "Ed Sheeran" },
+    // { id: 2, name: "Stay With Me", author: "Miki Matsubara" },
+    // { id: 3, name: "Renai Circulation", author: "IDK" }
 ];
 
 let editId = null; 
@@ -19,6 +20,7 @@ function saveToStorage() {
 }
 
 function renderMusic(Playlist) {
+    
     TableMusic.innerHTML = "";
     Playlist.forEach(music => {
         TableMusic.innerHTML += `
@@ -34,7 +36,6 @@ function renderMusic(Playlist) {
     });
 }
 
-
 function handleSubmit(event) {
     event.preventDefault();
 
@@ -44,7 +45,7 @@ function handleSubmit(event) {
     }
 
     if (editId === null) {
-    
+  
         let newMusic = {
             id: MyPlaylist.length !== 0 ? MyPlaylist[MyPlaylist.length - 1].id + 1 : 1,
             name: nameInput.value,
@@ -52,35 +53,58 @@ function handleSubmit(event) {
         };
         MyPlaylist.push(newMusic);
     } else {
-    
+        
         let index = MyPlaylist.findIndex(m => m.id === editId);
         MyPlaylist[index].name = nameInput.value;
         MyPlaylist[index].author = AuthorInput.value;
-        editId = null;
-        submitBtn.innerText = "Thêm";
-        formTitle.innerText = "🎵 Thêm bài hát";
+        
+        
+        stopEdit(); 
+       
+        return; 
     }
 
     resetForm();
     saveToStorage();
     renderMusic(MyPlaylist);
 }
-
-
 function editSong(id) {
     let song = MyPlaylist.find(m => m.id === id);
     if (song) {
         nameInput.value = song.name;
         AuthorInput.value = song.author;
         editId = id;
-        
 
         submitBtn.innerText = "Cập nhật";
         formTitle.innerText = "📝 Sửa bài hát";
+
+        
+        if (!document.getElementById("del_button")) {
+            const cancelButton = document.createElement("button");
+            cancelButton.id = "del_button";
+            cancelButton.type = "button"; 
+            cancelButton.innerText = "Hủy cập nhật";
+            cancelButton.onclick = stopEdit;
+            formElm.appendChild(cancelButton);
+        }
+        
         nameInput.focus();
     }
 }
 
+function stopEdit() {
+    editId = null;
+    const removeButton = document.getElementById("del_button");
+    if (removeButton) {
+        removeButton.remove();
+    }
+
+    submitBtn.innerText = "Thêm";
+    formTitle.innerText = "🎵 Thêm bài hát";
+    resetForm();
+    saveToStorage();
+    renderMusic(MyPlaylist);
+}
 function deleteMusic(id) {
     if (confirm("Bạn có chắc chắn muốn xóa bài hát này?")) {
         MyPlaylist = MyPlaylist.filter(music => music.id !== id);
@@ -88,6 +112,7 @@ function deleteMusic(id) {
         renderMusic(MyPlaylist);
     }
 }
+
 
 function searchSong() {
    
